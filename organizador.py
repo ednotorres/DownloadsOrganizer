@@ -18,6 +18,7 @@ class FileOrganizer():
         self.drive = os.getenv('HOMEDRIVE')
         self.home = os.getenv('HOMEPATH')
         self.download_folder = self.drive + self.home + '\Downloads'
+        #self.download_folder = 'H:\\8M'
 
         # self.pastas é a variável pela qual eu vou saber se não estou fazendo uma recursividade exagerada.
         self.pastas = ['PDF', 'Imagens', 'ZIP', 'Office_LibreOffice', 'Instaladores', 'Scripts', 'MP3', 'Videos']
@@ -37,7 +38,7 @@ class FileOrganizer():
             'Instaladores':['.exe', '.EXE', '.msi', '.MSI'],
             'Scripts':['.txt', '.TXT', '.sql', '.SQL', 'json', 'JSON', '.dsn', '.DNS', '.log', '.LOG'],
             'MP3':['.mp3', '.MP3'],
-            'Videos':['.mp4', '.MP4', '.mov', '.MOV', '.srt', '.SRT', '.wav', '.WAV'],
+            'Videos':['.mp4', '.MP4', '.mov', '.MOV', '.srt', '.SRT', '.wav', '.WAV', '.avi', '.AVI', 'rmvb', 'RMVB', '.3gp', '.3GP'],
         }
 
     def fileMD5(self, file_name):
