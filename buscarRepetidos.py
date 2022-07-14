@@ -66,5 +66,5 @@ class Desduplicar():
         return digest
 
 a = Desduplicar()
-a.pasta_destino = 'z:\\Arquivo Morto\\duplicados\\'
-a.varrer_pastas('z:')
+a.pasta_destino = 'C:\\Users\\ednoj\\Downloads'
+a.varrer_pastas('C:\\Users\\ednoj\\Downloads')

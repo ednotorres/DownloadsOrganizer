@@ -1,9 +1,11 @@
 # encoding: utf-8
 
 import os
+import sys
 import hashlib
+from delphivcl import *
 
-class FileOrganizer():
+class FileOrganizer(Form):
     # Organizador de arquivo. A intenção é organizar apenas a pasta Downloads, de Windows ou Linux,
     # mas pode ser usado para organizar qualquer pasta.
     # O Script varre a pasta definida em download_folder e começa a fazer distinção pela extensão do
@@ -14,32 +16,130 @@ class FileOrganizer():
     # que seus nomes sejam diferentes. Neste caso, o arquivo com hash igual ao já enviado será
     # excluído.
 
-    def __init__(self):
-        self.drive = os.getenv('HOMEDRIVE')
-        self.home = os.getenv('HOMEPATH')
-        self.download_folder = self.drive + self.home + '\Downloads'
-        #self.download_folder = 'H:\\8M'
+    def __init__(self, owner):
+        self.WindowState = "wsNormal"
+        self.Width = 1050
+        self.Heigh = 400
+        self.Position = "poMainFormCenter"
+        self.__sm = StyleManager()
+        self.__sm.LoadFromFile("styles\\Windows10SlateGray.vsf")
+        self.__sm.SetStyle(self.__sm.StyleNames[1])
+        self.onClose = self.formOnClose
+        self.BorderStyle = "bsSingle"
+        self.defaultMargin = 2
+
+        self.painelSuperior(self)
+        self.painelDireita(self)
+        self.painelEsquerda(self)
+        # self.botaoSelectDir(self)
+        self.botaoExecutar(self)
+        self.fileList(self)
+
+        if sys.platform.startswith("win"):
+            self.drive = os.getenv('SystemDrive')
+            self.home = os.getenv('USERPROFILE')
+
+        self.download_folder = self.home + '\Downloads'
+        self.Caption = "    Organizador de Arquivos: " + self.download_folder
 
         # self.pastas é a variável pela qual eu vou saber se não estou fazendo uma recursividade exagerada.
         self.pastas = ['PDF', 'Imagens', 'ZIP', 'Office_LibreOffice', 'Instaladores', 'Scripts', 'MP3', 'Videos']
 
         self.file_hash = []  # Guardará o hash dos arquivos.
-
         '''
         Extensões de arquivos para organizar.
         Esta tupla contém como "Key" os nomes das pastas onde os arquivos serão realocados
         e como "Value" a extensão do arquivo. 
         '''
         self.extensoes = {
-            'PDF':['.pdf', '.PDF'],
-            'Imagens':['.jpg', '.JPG', 'jpeg', 'JPEG', '.jpg', '.JPG', '.bmp', '.BMP', '.gif', '.GIF', '.png', '.PNG', '.xcf', '.XCF'],
-            'ZIP':['.zip', '.ZIP'],
-            'Office_LibreOffice':['.xls', '.XLS', 'xlsx', 'XLSX', '.doc', '.DOC', 'docx', 'DOCX', '.ods', '.ODS', '.odt', '.ODT', '.ppt', '.PPT', 'pptx', 'PPTX', '.csv', '.CSV', '.pps', '.PPS', '.vss', '.VSS', '.met', '.MET', '.odp', '.ODP'],
-            'Instaladores':['.exe', '.EXE', '.msi', '.MSI'],
-            'Scripts':['.txt', '.TXT', '.sql', '.SQL', 'json', 'JSON', '.dsn', '.DNS', '.log', '.LOG'],
-            'MP3':['.mp3', '.MP3'],
-            'Videos':['.mp4', '.MP4', '.mov', '.MOV', '.srt', '.SRT', '.wav', '.WAV', '.avi', '.AVI', 'rmvb', 'RMVB', '.3gp', '.3GP'],
+            'PDF':['pdf'],
+            'Imagens':['jpg', 'jpeg', 'bmp', 'gif', 'png', 'xcf', 'webp', 'svg', 'ico'],
+            'ZIP':['zip', 'gz', 'tar'],
+            'Office_LibreOffice':['drawio', 'xls', 'xlsx', 'doc', 'docx', 'ods', 'odt', 'ppt', 'pptx', 'csv', 'pps', 'vss', 'met', 'odp', 'html'],
+            'Instaladores':['exe', 'msi', 'msu'],
+            'Scripts':['txt', 'sql', 'json', 'dsn', 'log', 'jar'],
+            'MP3':['mp3'],
+            'Videos':['mp4', 'mov', 'srt', 'wav', 'avi', 'rmvb', '3gp'],
         }
+
+    def formOnClose(self, Sender, action):
+        action.Value = caFree
+
+    def painelSuperior(self, sender):
+        self.ps = Panel(self)
+        self.ps.Margins.Top = self.defaultMargin
+        self.ps.Margins.Left = self.defaultMargin
+        self.ps.Margins.Right = self.defaultMargin
+
+        self.ps.AlignWithMargins = True
+        self.ps.Align = "alTop"
+        self.ps.Height = 35
+        self.ps.SetProps(Parent=sender)
+
+    def painelDireita(self, sender):
+        self.pd = Panel(self)
+        self.pd.Margins.Top = self.defaultMargin
+        self.pd.Margins.Left = self.defaultMargin
+        self.pd.Margins.Right = self.defaultMargin
+
+        self.pd.AlignWithMargins = True
+        self.pd.Align = "alRight"
+        self.pd.Width = 150
+        self.pd.SetProps(Parent=sender)
+
+    def painelEsquerda(self, sender):
+        self.pe = Panel(self)
+        self.pe.Margins.Top = self.defaultMargin
+        self.pe.Margins.Left = self.defaultMargin
+        self.pe.Margins.Right = self.defaultMargin
+
+        self.pe.AlignWithMargins = True
+        self.pe.Align = "alClient"
+        self.pe.SetProps(Parent=sender)
+
+    def botaoSelectDir(self, sender):
+        self.bntSelecao = BitBtn(self)
+        self.bntSelecao.SetProps(Parent=self.ps)
+        self.bntSelecao.Align = "alRight"
+        self.bntSelecao.Width = 120
+        self.bntSelecao.Caption = "Selecionar Pasta"
+        self.bntSelecao.AlignWithMargins = True
+
+        self.oDialog = FileOpenDialog(self)
+        self.oDialog.InitialDir = self.download_folder
+        self.oDialog.SetProps(Parent=self.ps)
+
+    def botaoExecutar(self, sender):
+        self.bntExecutar = BitBtn(self)
+        self.bntExecutar.SetProps(Parent=self.pd)
+        self.bntExecutar.Align = "alTop"
+        self.bntExecutar.Width = 120
+        self.bntExecutar.Caption = "Executar"
+        self.bntExecutar.AlignWithMargins = True
+        self.bntExecutar.Kind = "bkOK"
+        self.bntExecutar.OnClick = self.Simbora
+
+    def fileList(self, sender):
+        # self.lv = Memo(self)
+        # self.lv.SetProps(Parent=self.pe)
+        # self.lv.ReadOnly = True
+        # self.lv.ScrollBars = 'ssVertical'
+        # self.lv.Align = "alClient"
+        # self.lv.AlignWithMargins = True
+
+        self.i = Image(self)
+        self.i.Align = "alClient"
+        self.i.SetProps(Parent=self.pe)
+        # #https://www.youtube.com / watch?v = HBzEVgAqBs8
+        self.i.Picture.LoadFromFile("https://img.youtube.com/vi/HBzEVgAqBs8/0.jpg")
+
+
+
+
+    def Simbora(self, sender):
+        self.lv.Clear()
+        self.organizar(self.download_folder)
+        ShowMessage("Pasta [ {} ] organizada!".format(self.download_folder))
 
     def fileMD5(self, file_name):
         '''
@@ -88,7 +188,8 @@ class FileOrganizer():
                     encontrada, o arquivo será movido para a pasta à qual ele está 
                     relacionado, ex: foto1.jpg será enviada para ../Downloads/Imagens
                     '''
-                    extensao = arquivo[-4:]
+                    extensao = arquivo.split('.')[-1]
+                    extensao = extensao.lower()
 
                     for extensao_arquivo in self.extensoes:
                         '''
@@ -137,12 +238,16 @@ class FileOrganizer():
                 destino = self.renomear_destino(destino)
 
             print('Arquivo {} movido para {}'.format(origem, destino))
+            self.lv.Lines.Add('[MOV] - Arquivo {} MOVIDO para {}'.format(origem, destino))
+
             os.rename(origem, destino)
-            return True
         else:
             os.remove(origem)
             print('Arquivo {} removido por duplicidade'.format(origem))
-            return True
+            self.lv.Lines.Add('[DEL] - Arquivo {} EXCLUÍDO por duplicidade'.format(origem))
+
+        self.lv.Update()
+        return True
 
     def renomear_destino(self, destino):
         prenome = ''
@@ -175,5 +280,23 @@ class FileOrganizer():
 
         return fqdn
 
-a = FileOrganizer()
-a.organizar(a.download_folder)
+
+
+
+def main():
+    Application.Initialize()
+    Application.Icon.LoadFromFile("C:\\Users\\ednoj\\Pictures\\Icones\\icons8-web-analystics-100.ico")
+    Main = FileOrganizer(Application)
+    Application.Title = Main.Caption
+    Main.Show()
+    FreeConsole()
+    Application.Run()
+    Main.Destroy()
+
+if __name__ == '__main__':
+    main()
+
+
+#a = FileOrganizer()
+#a.download_folder = 'C:\\Users\\Torres\\Downloads'
+#a.organizar(a.download_folder)
