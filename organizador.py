@@ -17,12 +17,19 @@ class FileOrganizer(Form):
     # excluído.
 
     def __init__(self, owner):
+        '''
+        Inicia o script, agora com ambiente gráfico Delphi VCL.
+        Meio limitadinho, mas é muito eficiente no desenvolvimento do ambiente.
+        Delphi conseguiu ser RAD mesmo como lib do Python.
+
+        :param owner:
+        '''
         self.WindowState = "wsNormal"
         self.Width = 1050
         self.Heigh = 400
         self.Position = "poMainFormCenter"
         self.__sm = StyleManager()
-        self.__sm.LoadFromFile("styles\\Windows10SlateGray.vsf")
+        self.__sm.LoadFromFile("styles\\LavenderClassico.vsf")
         self.__sm.SetStyle(self.__sm.StyleNames[1])
         self.onClose = self.formOnClose
         self.BorderStyle = "bsSingle"
@@ -105,10 +112,6 @@ class FileOrganizer(Form):
         self.bntSelecao.Caption = "Selecionar Pasta"
         self.bntSelecao.AlignWithMargins = True
 
-        self.oDialog = FileOpenDialog(self)
-        self.oDialog.InitialDir = self.download_folder
-        self.oDialog.SetProps(Parent=self.ps)
-
     def botaoExecutar(self, sender):
         self.bntExecutar = BitBtn(self)
         self.bntExecutar.SetProps(Parent=self.pd)
@@ -117,26 +120,17 @@ class FileOrganizer(Form):
         self.bntExecutar.Caption = "Executar"
         self.bntExecutar.AlignWithMargins = True
         self.bntExecutar.Kind = "bkOK"
-        self.bntExecutar.OnClick = self.Simbora
+        self.bntExecutar.OnClick = self.OrganizarArquivos
 
     def fileList(self, sender):
-        # self.lv = Memo(self)
-        # self.lv.SetProps(Parent=self.pe)
-        # self.lv.ReadOnly = True
-        # self.lv.ScrollBars = 'ssVertical'
-        # self.lv.Align = "alClient"
-        # self.lv.AlignWithMargins = True
+        self.lv = Memo(self)
+        self.lv.SetProps(Parent=self.pe)
+        self.lv.ReadOnly = True
+        self.lv.ScrollBars = 'ssVertical'
+        self.lv.Align = "alClient"
+        self.lv.AlignWithMargins = True
 
-        self.i = Image(self)
-        self.i.Align = "alClient"
-        self.i.SetProps(Parent=self.pe)
-        # #https://www.youtube.com / watch?v = HBzEVgAqBs8
-        self.i.Picture.LoadFromFile("https://img.youtube.com/vi/HBzEVgAqBs8/0.jpg")
-
-
-
-
-    def Simbora(self, sender):
+    def OrganizarArquivos(self, sender):
         self.lv.Clear()
         self.organizar(self.download_folder)
         ShowMessage("Pasta [ {} ] organizada!".format(self.download_folder))
@@ -250,6 +244,14 @@ class FileOrganizer(Form):
         return True
 
     def renomear_destino(self, destino):
+        '''
+        Caso o arquivo de destino já tenha um nome igual, mesmo com o MD5 diferente, então um número
+        aleatório será inserido entre o nome do arquivo e a extensão.
+        O script não faz o levantamento do MD5 dos arquivos que já estão na pasta, então vc pode acabar
+        copiando um arquivo duplicado para a mesma pasta.
+        :param destino:
+        :return:
+        '''
         prenome = ''
         extensao = ''
         arquivo = ''
@@ -258,21 +260,16 @@ class FileOrganizer(Form):
         file_name = fqdn[-1:]
         file_name = ''.join(file_name)
 
-        arquivo = file_name
-
-        if arquivo[-4:-3] == '.':
-            prenome = arquivo[:-4]
-            extensao = arquivo[-4:]
-
-        elif arquivo[-5:-4] == '.':
-            prenome = arquivo[:-5]
-            extensao = arquivo[-5:]
+        arquivo = file_name.split('.')
+        extensao = arquivo[-1]
+        arquivo.pop()
+        prenome = '.'.join(arquivo)
 
         from random import randint
         randomizado = randint(1000, 5000)
         randomizado = str(randomizado).zfill(4)
 
-        arquivo = prenome + '_' + randomizado + '_' + extensao
+        arquivo = prenome + '_' + randomizado + '_.' + extensao
 
         fqdn[len(fqdn)-1] = arquivo
 
@@ -280,12 +277,9 @@ class FileOrganizer(Form):
 
         return fqdn
 
-
-
-
 def main():
     Application.Initialize()
-    Application.Icon.LoadFromFile("C:\\Users\\ednoj\\Pictures\\Icones\\icons8-web-analystics-100.ico")
+    Application.Icon.LoadFromFile("organizador.ico")
     Main = FileOrganizer(Application)
     Application.Title = Main.Caption
     Main.Show()
@@ -295,8 +289,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-#a = FileOrganizer()
-#a.download_folder = 'C:\\Users\\Torres\\Downloads'
-#a.organizar(a.download_folder)
